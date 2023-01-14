@@ -10,9 +10,10 @@ bot_token = os.environ.get('BOT_TOKEN')
 api_id = os.environ.get('API_ID')
 api_hash = os.environ.get('API_HASH')
 
-client = TelegramClient('session_name', api_id, api_hash,bot_token=bot_token)
+client = TelegramClient(session='session_name', api_id=api_id, api_hash=api_hash)
+client.start(bot_token=bot_token)
 
-@client.on_message()
+@client.on(events.NewMessage)
 async def handler(message):
     if message.text.startswith('mongodb://'):
         try:
