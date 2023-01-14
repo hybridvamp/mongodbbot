@@ -2,8 +2,7 @@ import json
 import os
 from io import BytesIO
 from telethon import TelegramClient, events
-from telethon.tl.types import InlineKeyboardButton
-from telethon.tl.types import InlineKeyboardMarkup
+from telethon.tl.types import KeyboardButton
 from pymongo import MongoClient, errors
 from tqdm import tqdm
 
