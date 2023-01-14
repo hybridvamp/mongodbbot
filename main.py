@@ -29,18 +29,8 @@ async def handler(message):
     elif message.text == '/backup':
         # ask for connection string
         await message.reply("Please provide the MongoDB connection string")
-        connection_string = await client.wait_for_message(chat_id=message.chat_id)
-        mongo_client = MongoClient(connection_string)
-        # backup the data from MongoDB
-        data = list(mongo_client.db.collection.find())
-        # create a bytesIO object to hold the data
-        data_file = BytesIO()
-        # save the data to the bytesIO object using tqdm
-        with tqdm(total=len(data)) as pbar:
-            json.dump(data, data_file, default=lambda o: pbar.update())
-        data_file.seek(0)
-        # send the file to the user
-        await message.reply_document(data_file, filename='backup.json')
+        # register the function to handle the user's response
+        client.add_event_handler(handle_connection_string, events.NewMessage(chats=message.chat_id, incoming=True))
     elif message.text == '/restore':
         # send message with restore options
         await message.reply("Please select an option to restore from: \n1. File sent by user \n2. Another MongoDB connection string")
@@ -65,5 +55,22 @@ async def handler(message):
             with tqdm(total=len(data)) as pbar:
                 mongo_client.db.collection.insert_many(data, ordered=False, bypass_document_validation=True, callback=lambda _, inserted: pbar.update(inserted))
             await message.reply("Data restored successfully!")
+
+async def handle_connection_string(event):
+    # event.message will contain the user's response
+    connection_string = event.message.text
+    mongo_client = MongoClient(connection_string)
+    # backup the data from MongoDB
+    data = list(mongo_client.db.collection.find())
+    # create a bytesIO object to hold the data
+    data_file = BytesIO()
+    # save the data to the bytesIO object using tqdm
+    with tqdm(total=len(data)) as pbar:
+        json.dump(data, data_file, default=lambda o: pbar.update())
+    data_file.seek(0)
+    # send the file to the user
+    await event.message.reply_document(data_file, filename='backup.json')
+    client.remove_event_handler(handle_connection_string, events.NewMessage)
+
 client.start()
 client.run_until_disconnected()
