@@ -15,7 +15,7 @@ client.start(bot_token=bot_token)
 
 @client.on(events.NewMessage)
 async def handler(message):
-    if message.text.startswith('mongodb://'):
+    if message.text.startswith('mongodb'):
         try:
             mongo_client = MongoClient(message.text)
             # check the server status
