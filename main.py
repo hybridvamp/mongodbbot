@@ -2,7 +2,7 @@ import json
 import os
 from io import BytesIO
 from telethon import TelegramClient, events
-from telethon.tl.types import KeyboardButton
+from telethon.tl.types import InlineKeyboardButton, InlineKeyboardMarkup
 from pymongo import MongoClient, errors
 from tqdm import tqdm
 
@@ -21,12 +21,14 @@ async def handler(message):
             mongo_client = MongoClient(message.text)
             # check the server status
             mongo_client.server_info()
-            # send message with buttons
-            buttons = [
-                [KeyboardButton.inline("Backup"), KeyboardButton.inline("Restore")]
-            ]
-            await message.reply("Connection successful! Please select an option:")
-            await message.reply_markup(buttons=buttons)
+            # create the inline keyboard buttons
+            backup_button = InlineKeyboardButton("Backup", callback_data='backup')
+            restore_button = InlineKeyboardButton("Restore", callback_data='restore')
+            buttons = [[backup_button, restore_button]]
+            # create the inline keyboard
+            keyboard = InlineKeyboardMarkup(buttons)
+            # send the message with the inline keyboard
+            await message.reply("Connection successful! Please select an option:", reply_markup=keyboard)
         except errors.ServerSelectionTimeoutError as e:
             await message.reply(f"Connection failed: {e}")
         except Exception as e:
